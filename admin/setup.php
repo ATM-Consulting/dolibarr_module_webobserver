@@ -103,13 +103,9 @@ $useFormSetup = 0;
 
 
 	$item = $formSetup->newItem('WEBOBSERVER_HOOK_URL');
-	$item->fieldInputOverride  = ' ';
-	if(!empty($conf->global->WEBOBSERVER_TOKEN)){
-		$item->fieldOutputOverride = dol_buildpath('/webobserver/public/get-data.php', 2);
-	}
-	else{
-		$item->fieldOutputOverride = $langs->trans('XConfMustBeSetBefore', $formSetup->newItem('WEBOBSERVER_TOKEN'));
-	}
+	$item->fieldOutputOverride = dol_buildpath('/webobserver/public/get-data.php', 2);
+	$item->fieldInputOverride = $item->fieldOutputOverride;
+
 
 //	// Hôte
 //	$item = $formSetup->newItem('NO_PARAM_JUST_TEXT');

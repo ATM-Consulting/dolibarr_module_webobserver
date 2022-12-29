@@ -34,7 +34,7 @@ WEBOBSERVER_TOKENTooltip = Token utilisé pour authentifier les échanges avec l
 WEBOBSERVER_WEBHOST_URL = Url WebHost cible
 WEBOBSERVER_WEBHOST_URLTooltip = L'adresse URL des WebHook de WebHost. Vous devez configurer et activer la tâche planifié dans cette instance pour notifier régulièrement WebHost des derniers changements.
 WEBOBSERVER_HOOK_URL = Url à fournir à WebHost pour les appels depuis WebHost
-WEBOBSERVER_HOOK_URLTooltip = Si vous choisissez de ne pas utilisé les WebHooks
+WEBOBSERVER_HOOK_URLTooltip = Si vous choisissez de ne pas utiliser les WebHooks
 
 
 #
@@ -44,3 +44,4 @@ About = About
 WebObserverAbout = About WebObserver
 WebObserverAboutPage = WebObserver about page
 
+XConfMustBeSetBefore = La configuration %s doit être activée

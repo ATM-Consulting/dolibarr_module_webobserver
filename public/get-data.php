@@ -23,7 +23,7 @@ require_once __DIR__ . '/../class/webobserver.class.php';
 
 $webObserver = new WebObserver();
 
-WebObserver::securityCheck(GETPOST('api_key'));
+$webObserver->securityCheck();
 
 print $webObserver::getInstanceJson();
 

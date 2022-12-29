@@ -74,7 +74,15 @@ class WebObserver {
 	 * Check security parameters
 	 * Check hash and time parameters
 	 */
-	public static function securityCheck($token) {
+	public static function securityCheck() {
+		global $conf;
+
+		if(empty($conf->global->WEBOBSERVER_TOKEN)){
+			return exit('Invalid token configuration');
+		}
+
+		$token = $conf->global->WEBOBSERVER_TOKEN;
+
 		// Vérification paramètres
 		if(!isset($_GET['hash'])) exit('Missing parameter');
 		if(!isset($_GET['time'])) exit('Missing parameter');
@@ -165,7 +173,7 @@ class WebObserver {
 										$modNameLoaded[$modName]->numero = $objMod->numero;
 										$modNameLoaded[$modName]->version = $objMod->version;
 										$modNameLoaded[$modName]->source = $objMod->isCoreOrExternalModule();
-										$modNameLoaded[$modName]->gitinfos = _getModuleGitInfos($dir);
+										$modNameLoaded[$modName]->gitinfos = self::getModuleGitInfos($dir);
 										$modNameLoaded[$modName]->editor_name = dol_escape_htmltag($pubname);
 										$modNameLoaded[$modName]->editor_url = dol_escape_htmltag($puburl);
 										$modNameLoaded[$modName]->active = !empty($conf->global->{$objMod->const_name});
