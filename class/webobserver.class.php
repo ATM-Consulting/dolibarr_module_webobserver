@@ -172,6 +172,7 @@ class WebObserver {
 										$modNameLoaded[$modName]->name = $objMod->name;
 										$modNameLoaded[$modName]->numero = $objMod->numero;
 										$modNameLoaded[$modName]->version = $objMod->version;
+										$modNameLoaded[$modName]->editor_name = $objMod->editor_name;
 										$modNameLoaded[$modName]->source = $objMod->isCoreOrExternalModule();
 										$modNameLoaded[$modName]->gitinfos = self::getModuleGitInfos($dir);
 										$modNameLoaded[$modName]->editor_name = dol_escape_htmltag($pubname);
