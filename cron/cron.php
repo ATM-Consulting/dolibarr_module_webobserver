@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../class/webobserver.class.php';
+require_once __DIR__ . '/../class/jsonResponse.class.php';
 
 class WebObserverCron {
 
@@ -29,9 +30,13 @@ class WebObserverCron {
 	 */
 	public function updateInstanceData()
 	{
-		global $conf, $db, $langs;
+		global $conf, $langs;
 
-		$webObserver = new WebObserver($db);
+		$webObserver  = new WebObserver();
+
+		$webObserver->securityCheck();
+
+		$jsonResponse = new webObserver\JsonResponse();
 
 		$instanceData = $webObserver->getInstanceData();
 		$webHostUrl   = $conf->global->WEBOBSERVER_WEBHOST_URL;
@@ -39,15 +44,21 @@ class WebObserverCron {
 		if (dol_strlen($webHostUrl) > 0) {
 			if (is_object($instanceData) && !empty($instanceData)) {
 
-				$instanceDataJson = json_encode($instanceData);
+				$jsonResponse->result = 1;
+				$jsonResponse->msg = 1;
+				$jsonResponse->data = json_encode($instanceData);
+
+				$instanceDataJson = $jsonResponse->getJsonResponse();
 
 				$ch = curl_init( $webHostUrl );
 				curl_setopt( $ch, CURLOPT_POST, 1);
 				curl_setopt( $ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-				curl_setopt( $ch, CURLOPT_POSTFIELDS, ['json_data' => $instanceDataJson]);
-				curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1);
-				curl_exec( $ch );
+				curl_setopt( $ch, CURLOPT_POSTFIELDS, $instanceDataJson);
+				curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true);
+				$webHostResponse = curl_exec( $ch );
 				curl_close($ch);
+
+				$this->output = $webHostResponse;
 
 				return 0;
 			} else {
