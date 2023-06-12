@@ -261,142 +261,9 @@ class modWebObserver extends DolibarrModules
 
 		// Permissions provided by this module
 		$this->rights = array();
-		$r = 0;
-		// Add here entries to declare new permissions
-		/* BEGIN MODULEBUILDER PERMISSIONS */
-//		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-//		$this->rights[$r][1] = 'Read objects of WebObserver'; // Permission label
-//		$this->rights[$r][4] = 'myobject';
-//		$this->rights[$r][5] = 'read'; // In php code, permission will be checked by test if ($user->rights->webobserver->myobject->read)
-//		$r++;
-//		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-//		$this->rights[$r][1] = 'Create/Update objects of WebObserver'; // Permission label
-//		$this->rights[$r][4] = 'myobject';
-//		$this->rights[$r][5] = 'write'; // In php code, permission will be checked by test if ($user->rights->webobserver->myobject->write)
-//		$r++;
-//		$this->rights[$r][0] = $this->numero . sprintf("%02d", $r + 1); // Permission id (must not be already used)
-//		$this->rights[$r][1] = 'Delete objects of WebObserver'; // Permission label
-//		$this->rights[$r][4] = 'myobject';
-//		$this->rights[$r][5] = 'delete'; // In php code, permission will be checked by test if ($user->rights->webobserver->myobject->delete)
-		$r++;
-		/* END MODULEBUILDER PERMISSIONS */
 
 		// Main menu entries to add
 		$this->menu = array();
-		$r = 0;
-		// Add here entries to declare new menus
-		/* BEGIN MODULEBUILDER TOPMENU */
-//		$this->menu[$r++] = array(
-//			'fk_menu'=>'', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-//			'type'=>'top', // This is a Top menu entry
-//			'titre'=>'ModuleWebObserverName',
-//			'prefix' => img_picto('', $this->picto, 'class="paddingright pictofixedwidth valignmiddle"'),
-//			'mainmenu'=>'webobserver',
-//			'leftmenu'=>'',
-//			'url'=>'/webobserver/webobserverindex.php',
-//			'langs'=>'webobserver@webobserver', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-//			'position'=>1000 + $r,
-//			'enabled'=>'$conf->webobserver->enabled', // Define condition to show or hide menu entry. Use '$conf->webobserver->enabled' if entry must be visible if module is enabled.
-//			'perms'=>'1', // Use 'perms'=>'$user->rights->webobserver->myobject->read' if you want your menu with a permission rules
-//			'target'=>'',
-//			'user'=>2, // 0=Menu for internal users, 1=external users, 2=both
-//		);
-		/* END MODULEBUILDER TOPMENU */
-		/* BEGIN MODULEBUILDER LEFTMENU MYOBJECT
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=webobserver',      // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',                          // This is a Top menu entry
-			'titre'=>'MyObject',
-			'prefix' => img_picto('', $this->picto, 'class="paddingright pictofixedwidth valignmiddle"'),
-			'mainmenu'=>'webobserver',
-			'leftmenu'=>'myobject',
-			'url'=>'/webobserver/webobserverindex.php',
-			'langs'=>'webobserver@webobserver',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'$conf->webobserver->enabled',  // Define condition to show or hide menu entry. Use '$conf->webobserver->enabled' if entry must be visible if module is enabled.
-			'perms'=>'$user->rights->webobserver->myobject->read',			                // Use 'perms'=>'$user->rights->webobserver->level1->level2' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-		);
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=webobserver,fk_leftmenu=myobject',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'List_MyObject',
-			'mainmenu'=>'webobserver',
-			'leftmenu'=>'webobserver_myobject_list',
-			'url'=>'/webobserver/myobject_list.php',
-			'langs'=>'webobserver@webobserver',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'$conf->webobserver->enabled',  // Define condition to show or hide menu entry. Use '$conf->webobserver->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=>'$user->rights->webobserver->myobject->read',			                // Use 'perms'=>'$user->rights->webobserver->level1->level2' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-		);
-		$this->menu[$r++]=array(
-			'fk_menu'=>'fk_mainmenu=webobserver,fk_leftmenu=myobject',	    // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'left',			                // This is a Left menu entry
-			'titre'=>'New_MyObject',
-			'mainmenu'=>'webobserver',
-			'leftmenu'=>'webobserver_myobject_new',
-			'url'=>'/webobserver/myobject_card.php?action=create',
-			'langs'=>'webobserver@webobserver',	        // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000+$r,
-			'enabled'=>'$conf->webobserver->enabled',  // Define condition to show or hide menu entry. Use '$conf->webobserver->enabled' if entry must be visible if module is enabled. Use '$leftmenu==\'system\'' to show if leftmenu system is selected.
-			'perms'=>'$user->rights->webobserver->myobject->write',			                // Use 'perms'=>'$user->rights->webobserver->level1->level2' if you want your menu with a permission rules
-			'target'=>'',
-			'user'=>2,				                // 0=Menu for internal users, 1=external users, 2=both
-		);
-		END MODULEBUILDER LEFTMENU MYOBJECT */
-		// Exports profiles provided by this module
-		$r = 1;
-		/* BEGIN MODULEBUILDER EXPORT MYOBJECT */
-		/*
-		$langs->load("webobserver@webobserver");
-		$this->export_code[$r]=$this->rights_class.'_'.$r;
-		$this->export_label[$r]='MyObjectLines';	// Translation key (used only if key ExportDataset_xxx_z not found)
-		$this->export_icon[$r]='myobject@webobserver';
-		// Define $this->export_fields_array, $this->export_TypeFields_array and $this->export_entities_array
-		$keyforclass = 'MyObject'; $keyforclassfile='/webobserver/class/myobject.class.php'; $keyforelement='myobject@webobserver';
-		include DOL_DOCUMENT_ROOT.'/core/commonfieldsinexport.inc.php';
-		//$this->export_fields_array[$r]['t.fieldtoadd']='FieldToAdd'; $this->export_TypeFields_array[$r]['t.fieldtoadd']='Text';
-		//unset($this->export_fields_array[$r]['t.fieldtoremove']);
-		//$keyforclass = 'MyObjectLine'; $keyforclassfile='/webobserver/class/myobject.class.php'; $keyforelement='myobjectline@webobserver'; $keyforalias='tl';
-		//include DOL_DOCUMENT_ROOT.'/core/commonfieldsinexport.inc.php';
-		$keyforselect='myobject'; $keyforaliasextra='extra'; $keyforelement='myobject@webobserver';
-		include DOL_DOCUMENT_ROOT.'/core/extrafieldsinexport.inc.php';
-		//$keyforselect='myobjectline'; $keyforaliasextra='extraline'; $keyforelement='myobjectline@webobserver';
-		//include DOL_DOCUMENT_ROOT.'/core/extrafieldsinexport.inc.php';
-		//$this->export_dependencies_array[$r] = array('myobjectline'=>array('tl.rowid','tl.ref')); // To force to activate one or several fields if we select some fields that need same (like to select a unique key if we ask a field of a child to avoid the DISTINCT to discard them, or for computed field than need several ATM Consulting - GPAO fields)
-		//$this->export_special_array[$r] = array('t.field'=>'...');
-		//$this->export_examplevalues_array[$r] = array('t.field'=>'Example');
-		//$this->export_help_array[$r] = array('t.field'=>'FieldDescHelp');
-		$this->export_sql_start[$r]='SELECT DISTINCT ';
-		$this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'myobject as t';
-		//$this->export_sql_end[$r]  =' LEFT JOIN '.MAIN_DB_PREFIX.'myobject_line as tl ON tl.fk_myobject = t.rowid';
-		$this->export_sql_end[$r] .=' WHERE 1 = 1';
-		$this->export_sql_end[$r] .=' AND t.entity IN ('.getEntity('myobject').')';
-		$r++; */
-		/* END MODULEBUILDER EXPORT MYOBJECT */
-
-		// Imports profiles provided by this module
-		$r = 1;
-		/* BEGIN MODULEBUILDER IMPORT MYOBJECT */
-		/*
-		 $langs->load("webobserver@webobserver");
-		 $this->export_code[$r]=$this->rights_class.'_'.$r;
-		 $this->export_label[$r]='MyObjectLines';	// Translation key (used only if key ExportDataset_xxx_z not found)
-		 $this->export_icon[$r]='myobject@webobserver';
-		 $keyforclass = 'MyObject'; $keyforclassfile='/webobserver/class/myobject.class.php'; $keyforelement='myobject@webobserver';
-		 include DOL_DOCUMENT_ROOT.'/core/commonfieldsinexport.inc.php';
-		 $keyforselect='myobject'; $keyforaliasextra='extra'; $keyforelement='myobject@webobserver';
-		 include DOL_DOCUMENT_ROOT.'/core/extrafieldsinexport.inc.php';
-		 //$this->export_dependencies_array[$r]=array('mysubobject'=>'ts.rowid', 't.myfield'=>array('t.myfield2','t.myfield3')); // To force to activate one or several fields if we select some fields that need same (like to select a unique key if we ask a field of a child to avoid the DISTINCT to discard them, or for computed field than need several ATM Consulting - GPAO fields)
-		 $this->export_sql_start[$r]='SELECT DISTINCT ';
-		 $this->export_sql_end[$r]  =' FROM '.MAIN_DB_PREFIX.'myobject as t';
-		 $this->export_sql_end[$r] .=' WHERE 1 = 1';
-		 $this->export_sql_end[$r] .=' AND t.entity IN ('.getEntity('myobject').')';
-		 $r++; */
-		/* END MODULEBUILDER IMPORT MYOBJECT */
 	}
 
 	/**
@@ -431,39 +298,39 @@ class modWebObserver extends DolibarrModules
 
 		$sql = array();
 
-		// Document templates
-		$moduledir = 'webobserver';
-		$myTmpObjects = array();
-		$myTmpObjects['MyObject'] = array('includerefgeneration'=>0, 'includedocgeneration'=>0);
-
-		foreach ($myTmpObjects as $myTmpObjectKey => $myTmpObjectArray) {
-			if ($myTmpObjectKey == 'MyObject') {
-				continue;
-			}
-			if ($myTmpObjectArray['includerefgeneration']) {
-				$src = DOL_DOCUMENT_ROOT.'/install/doctemplates/webobserver/template_myobjects.odt';
-				$dirodt = DOL_DATA_ROOT.'/doctemplates/webobserver';
-				$dest = $dirodt.'/template_myobjects.odt';
-
-				if (file_exists($src) && !file_exists($dest)) {
-					require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
-					dol_mkdir($dirodt);
-					$result = dol_copy($src, $dest, 0, 0);
-					if ($result < 0) {
-						$langs->load("errors");
-						$this->error = $langs->trans('ErrorFailToCopyFile', $src, $dest);
-						return 0;
-					}
-				}
-
-				$sql = array_merge($sql, array(
-					"DELETE FROM ".MAIN_DB_PREFIX."document_model WHERE nom = 'standard_".strtolower($myTmpObjectKey)."' AND type = '".$this->db->escape(strtolower($myTmpObjectKey))."' AND entity = ".((int) $conf->entity),
-					"INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, type, entity) VALUES('standard_".strtolower($myTmpObjectKey)."', '".$this->db->escape(strtolower($myTmpObjectKey))."', ".((int) $conf->entity).")",
-					"DELETE FROM ".MAIN_DB_PREFIX."document_model WHERE nom = 'generic_".strtolower($myTmpObjectKey)."_odt' AND type = '".$this->db->escape(strtolower($myTmpObjectKey))."' AND entity = ".((int) $conf->entity),
-					"INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, type, entity) VALUES('generic_".strtolower($myTmpObjectKey)."_odt', '".$this->db->escape(strtolower($myTmpObjectKey))."', ".((int) $conf->entity).")"
-				));
-			}
-		}
+//		// Document templates
+//		$moduledir = 'webobserver';
+//		$myTmpObjects = array();
+//		$myTmpObjects['MyObject'] = array('includerefgeneration'=>0, 'includedocgeneration'=>0);
+//
+//		foreach ($myTmpObjects as $myTmpObjectKey => $myTmpObjectArray) {
+//			if ($myTmpObjectKey == 'MyObject') {
+//				continue;
+//			}
+//			if ($myTmpObjectArray['includerefgeneration']) {
+//				$src = DOL_DOCUMENT_ROOT.'/install/doctemplates/webobserver/template_myobjects.odt';
+//				$dirodt = DOL_DATA_ROOT.'/doctemplates/webobserver';
+//				$dest = $dirodt.'/template_myobjects.odt';
+//
+//				if (file_exists($src) && !file_exists($dest)) {
+//					require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+//					dol_mkdir($dirodt);
+//					$result = dol_copy($src, $dest, 0, 0);
+//					if ($result < 0) {
+//						$langs->load("errors");
+//						$this->error = $langs->trans('ErrorFailToCopyFile', $src, $dest);
+//						return 0;
+//					}
+//				}
+//
+//				$sql = array_merge($sql, array(
+//					"DELETE FROM ".MAIN_DB_PREFIX."document_model WHERE nom = 'standard_".strtolower($myTmpObjectKey)."' AND type = '".$this->db->escape(strtolower($myTmpObjectKey))."' AND entity = ".((int) $conf->entity),
+//					"INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, type, entity) VALUES('standard_".strtolower($myTmpObjectKey)."', '".$this->db->escape(strtolower($myTmpObjectKey))."', ".((int) $conf->entity).")",
+//					"DELETE FROM ".MAIN_DB_PREFIX."document_model WHERE nom = 'generic_".strtolower($myTmpObjectKey)."_odt' AND type = '".$this->db->escape(strtolower($myTmpObjectKey))."' AND entity = ".((int) $conf->entity),
+//					"INSERT INTO ".MAIN_DB_PREFIX."document_model (nom, type, entity) VALUES('generic_".strtolower($myTmpObjectKey)."_odt', '".$this->db->escape(strtolower($myTmpObjectKey))."', ".((int) $conf->entity).")"
+//				));
+//			}
+//		}
 
 		return $this->_init($sql, $options);
 	}
