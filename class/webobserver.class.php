@@ -341,6 +341,7 @@ class WebObserver {
 
 		$url.= '?action=set-info-instance-dolibarr';
 		$url.= '&hash='.$hash.'&time='.$time;
+		$url.= '&api_observer_type=webobserver_v1';
 
 
 		if(!empty($instanceId)){
