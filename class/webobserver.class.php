@@ -2,6 +2,36 @@
 
 class WebObserver {
 
+
+
+	/**
+	 * @var string 		Error string
+	 * @see             $errors
+	 */
+	public $error;
+
+	/**
+	 * @var string[]	Array of error strings
+	 */
+	public $errors = array();
+
+	/**
+	 * @var reponse_code  a http_response_header parsed reponse code
+	 */
+	public $reponse_code;
+
+	/**
+	 * @var http_response_header  the last call $http_response_header
+	 */
+
+	public $http_response_header;
+
+	/**
+	 * @var TResponseHeader  the last call $http_response_header parsed <- for most common usage (see self::parseHeaders() function)
+	 */
+	public $TResponseHeader;
+
+
 	public static function getInstanceData(){
 
 		global $conf, $dolibarr_main_db_host, $dolibarr_main_db_name, $dolibarr_main_db_user, $dolibarr_main_db_type;
@@ -132,10 +162,9 @@ class WebObserver {
 	}
 
 
-	/********************************
+	/**
 	 * Specific functions to get informations about Dolibarr (Modules, Users, ...)
-	 ********************************/
-
+	*/
 	public static function module_active() {
 		include_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
 
@@ -172,6 +201,7 @@ class WebObserver {
 										$modNameLoaded[$modName]->name = $objMod->name;
 										$modNameLoaded[$modName]->numero = $objMod->numero;
 										$modNameLoaded[$modName]->version = $objMod->version;
+										$modNameLoaded[$modName]->editor_name = $objMod->editor_name;
 										$modNameLoaded[$modName]->source = $objMod->isCoreOrExternalModule();
 										$modNameLoaded[$modName]->gitinfos = self::getModuleGitInfos($dir);
 										$modNameLoaded[$modName]->editor_name = dol_escape_htmltag($pubname);
@@ -206,22 +236,29 @@ class WebObserver {
 		return $modNameLoaded;
 	}
 
+	/**
+	 * @param $dir
+	 * @return stdClass
+	 */
 	public static function getModuleGitInfos($dir) {
-		global $donedir;
-		if(isset($donedir[$dir])) return $donedir[$dir];
+		global $doneDir;
+		if(isset($doneDir[$dir])) return $doneDir[$dir];
 
 		$cmd = 'cd ' . $dir . ' && git status';
 		$status = shell_exec($cmd);
 		$cmd = 'cd ' . $dir . ' && git rev-parse --abbrev-ref HEAD';
 		$branch = shell_exec($cmd);
 
-		$donedir[$dir] = new stdClass();
-		$donedir[$dir]->status = $status;
-		$donedir[$dir]->branch = $branch;
+		$doneDir[$dir] = new stdClass();
+		$doneDir[$dir]->status = $status;
+		$doneDir[$dir]->branch = $branch;
 
-		return $donedir[$dir];
+		return $doneDir[$dir];
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public static function last_login() {
 		global $db;
 
@@ -249,5 +286,295 @@ class WebObserver {
 		$obj = $db->fetch_object($res);
 
 		return (int)$obj->nb;
+	}
+
+
+	/**
+	 * @param int $value Durée d'expiration (en secondes) pour les flots basés sur les sockets.
+	 */
+	public function setSocketTimeOut($value = 0){
+		if($value>0){
+			$this->default_socket_timeout = intval($value);
+		}
+
+		ini_set('default_socket_timeout', $this->default_socket_timeout);
+	}
+
+
+	public function call($useCache = true){
+		global $conf;
+
+		// Use cache
+		if($useCache && !empty($this->data)){
+			return $this->data;
+		}
+
+
+		$instanceId = false;
+		$instanceRef = false;
+
+		$url = $this->getWebHostTargetUrl();
+		if(!$url){
+			$this->setError('Configuration WebHost target URL not set');
+			return false;
+		}
+
+		if(!empty($conf->global->WEBOBSERVER_INSTANCE_ID)){
+			$instanceId = $conf->global->WEBOBSERVER_INSTANCE_ID;
+		}
+
+		if(!empty($conf->global->WEBOBSERVER_INSTANCE_REF)){
+			$instanceRef = $conf->global->WEBOBSERVER_INSTANCE_REF;
+		}
+
+		if(empty($instanceId) && empty($instanceRef)){
+			$this->setError('Configuration ID OR REF not set');
+			return false;
+		}
+
+
+		if($url!==false){
+			$time = time();
+			$hash = md5($this->webInstance->api_token . $time);
+
+			$url.= '?action=set-info-instance-dolibarr';
+			$url.= '&hash='.$hash.'&time='.$time;
+
+			if(!empty($instanceId)){
+				$url.= '&id='.intval($instanceId);
+			}
+
+			if(!empty($instanceRef)){
+				$url.= '&ref='.urlencode($instanceRef);
+			}
+
+			$res = $this->getJsonData($url);
+
+			if(!empty($this->data)) {
+				return $this->data;
+			}else{
+				$this->setError('@file_get_contents fail => '.$url.' : '.$res);
+			}
+		}else{
+			$this->setError('url not valid => '.$url);
+		}
+
+		return false;
+	}
+
+
+	public static function http_response_code_msg($code = NULL)
+	{
+		if ($code !== NULL) {
+
+			switch ($code) {
+				case 100:
+					$text = 'Continue';
+					break;
+				case 101:
+					$text = 'Switching Protocols';
+					break;
+				case 200:
+					$text = 'OK';
+					break;
+				case 201:
+					$text = 'Created';
+					break;
+				case 202:
+					$text = 'Accepted';
+					break;
+				case 203:
+					$text = 'Non-Authoritative Information';
+					break;
+				case 204:
+					$text = 'No Content';
+					break;
+				case 205:
+					$text = 'Reset Content';
+					break;
+				case 206:
+					$text = 'Partial Content';
+					break;
+				case 300:
+					$text = 'Multiple Choices';
+					break;
+				case 301:
+					$text = 'Moved Permanently';
+					break;
+				case 302:
+					$text = 'Moved Temporarily';
+					break;
+				case 303:
+					$text = 'See Other';
+					break;
+				case 304:
+					$text = 'Not Modified';
+					break;
+				case 305:
+					$text = 'Use Proxy';
+					break;
+				case 400:
+					$text = 'Bad Request';
+					break;
+				case 401:
+					$text = 'Unauthorized';
+					break;
+				case 402:
+					$text = 'Payment Required';
+					break;
+				case 403:
+					$text = 'Forbidden';
+					break;
+				case 404:
+					$text = 'Not Found';
+					break;
+				case 405:
+					$text = 'Method Not Allowed';
+					break;
+				case 406:
+					$text = 'Not Acceptable';
+					break;
+				case 407:
+					$text = 'Proxy Authentication Required';
+					break;
+				case 408:
+					$text = 'Request Time-out';
+					break;
+				case 409:
+					$text = 'Conflict';
+					break;
+				case 410:
+					$text = 'Gone';
+					break;
+				case 411:
+					$text = 'Length Required';
+					break;
+				case 412:
+					$text = 'Precondition Failed';
+					break;
+				case 413:
+					$text = 'Request Entity Too Large';
+					break;
+				case 414:
+					$text = 'Request-URI Too Large';
+					break;
+				case 415:
+					$text = 'Unsupported Media Type';
+					break;
+				case 500:
+					$text = 'Internal Server Error';
+					break;
+				case 501:
+					$text = 'Not Implemented';
+					break;
+				case 502:
+					$text = 'Bad Gateway';
+					break;
+				case 503:
+					$text = 'Service Unavailable';
+					break;
+				case 504:
+					$text = 'Gateway Time-out';
+					break;
+				case 505:
+					$text = 'HTTP Version not supported';
+					break;
+				default:
+					$text = 'Unknown http status code "' . htmlentities($code) . '"';
+					break;
+			}
+
+			return $text;
+
+		} else {
+			return $text = 'Unknown http status code NULL';
+		}
+	}
+
+	public static function parseHeaders( $headers )
+	{
+		$head = array();
+		if(!is_array($headers)){
+			return $head;
+		}
+
+		foreach( $headers as $k=>$v )
+		{
+			$t = explode( ':', $v, 2 );
+			if( isset( $t[1] ) )
+				$head[ trim($t[0]) ] = trim( $t[1] );
+			else
+			{
+				$head[] = $v;
+				if( preg_match( "#HTTP/[0-9\.]+\s+([0-9]+)#",$v, $out ) )
+					$head['reponse_code'] = intval($out[1]);
+			}
+		}
+		return $head;
+	}
+
+	public function getJsonData($url){
+		$this->data = false;
+		$res = @file_get_contents($url);
+		$this->http_response_header = $http_response_header;
+		$this->TResponseHeader = self::parseHeaders($http_response_header);
+		if($res !== false){
+			$pos = strpos($res, '{');
+			if($pos > 0){
+				// cela signifie qu'il y a une erreur ou que la sortie n'est pas propre
+				$res = substr($res, $pos);
+			}
+
+			$this->data = json_decode($res);
+		}
+
+		return $this->data;
+	}
+
+	/**
+	 * @param $url
+	 * @return bool
+	 */
+	public function getContentData($url){
+		$this->data = false;
+		$res = @file_get_contents($url);
+		$this->http_response_header = $http_response_header;
+		$this->TResponseHeader = self::parseHeaders($http_response_header);
+		if($res !== false){
+			$this->data = $res;
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+
+	/**
+	 * Permet gérer les retours d'erreur avec message
+	 *
+	 * @param string $err
+	 */
+	public function setError($err){
+		if(!empty($err)){
+			$this->error = $err;
+			$this->errors[] = $this->error;
+		}
+	}
+
+	/**
+	 * @return bool|string $url
+	 */
+	public function getWebHostTargetUrl(){
+
+		if(empty($conf->global->WEBOBSERVER_WEBHOST_URL)) return false;
+
+		$url = $conf->global->WEBOBSERVER_WEBHOST_URL;
+
+		if(filter_var($url, FILTER_VALIDATE_URL)){
+			return $url;
+		}
+		else{
+			return false;
+		}
 	}
 }

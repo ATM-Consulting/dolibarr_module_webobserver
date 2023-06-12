@@ -92,19 +92,34 @@ $setupnotempty = 0;
 $useFormSetup = 0;
 // Convert arrayofparameter into a formSetup object
 
-	$formSetup = new FormSetup($db);
-
-	// or use the new system see exemple as follow (or use both because you can ;-) )
-
-	// Setup conf webhost token
-	$formSetup->newItem('WEBOBSERVER_TOKEN')->setAsSecureKey();
-
-	$formSetup->newItem('WEBOBSERVER_WEBHOST_URL');
+$formSetup = new FormSetup($db);
 
 
-	$item = $formSetup->newItem('WEBOBSERVER_HOOK_URL');
-	$item->fieldOutputOverride = dol_buildpath('/webobserver/public/get-data.php', 2);
-	$item->fieldInputOverride = $item->fieldOutputOverride;
+$item = $formSetup->newItem('WEBOBSERVER_HOOK_URL');
+$item->fieldOutputOverride = dol_buildpath('/webobserver/public/get-data.php', 2);
+$item->fieldInputOverride = $item->fieldOutputOverride;
+
+
+// Setup conf webhost token
+$formSetup->newItem('WEBOBSERVER_TOKEN')->setAsSecureKey();
+
+
+
+$formSetup->newItem('WEBOBSERVER_CRON_CONF_TITLE')->setAsTitle();
+
+$formSetup->newItem('WEBOBSERVER_INSTANCE_REF');
+
+$formSetup->newItem('WEBOBSERVER_WEBHOST_URL');
+
+$item = $formSetup->newItem('WEBOBSERVER_INSTANCE_ID');
+$item->fieldAttr['type'] = 'number';
+$item->fieldAttr['min'] = 1;
+$item->fieldAttr['step'] = 1;
+
+$item = $formSetup->newItem('WEBOBSERVER_INSTANCE_REF');
+
+
+
 
 
 //	// Hôte
