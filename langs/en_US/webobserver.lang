@@ -47,3 +47,6 @@ WebObserverAbout = About WebObserver
 WebObserverAboutPage = WebObserver about page
 
 XConfMustBeSetBefore = La configuration %s doit être activée
+MissingParameter = Missing parameter "%s"
+InvalidWebHostUrl = Url WebHost invalide "%s"
+SendWebHostPing = Envoyer un ping au serveur webHost
