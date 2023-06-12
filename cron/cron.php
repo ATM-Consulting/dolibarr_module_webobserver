@@ -41,7 +41,7 @@ class WebObserverCron {
 		$instanceData = $webObserver->getInstanceData();
 		$webHostUrl   = $conf->global->WEBOBSERVER_WEBHOST_URL;
 
-		if (dol_strlen($webHostUrl) > 0) {
+		if (dol_strlen($webHostUrl) > 0 && filter_var($webHostUrl, FILTER_VALIDATE_URL)) {
 			if (is_object($instanceData) && !empty($instanceData)) {
 
 				$jsonResponse->result = 1;
