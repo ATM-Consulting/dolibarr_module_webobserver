@@ -118,6 +118,10 @@ $item->fieldAttr['step'] = 1;
 
 $item = $formSetup->newItem('WEBOBSERVER_INSTANCE_REF');
 
+
+$formSetup->newItem('WEBOBSERVER_USE_GIT_AND_SHELL_CMD')->setAsYesNo();
+
+
 $setupnotempty = count($formSetup->items);
 
 
@@ -156,6 +160,19 @@ elseif($action == 'sendWebHostPing' ){
 		}
 	}else{
 		setEventMessage($textSrvResponse.$webObserver->error, 'errors');
+	}
+}
+elseif($action == 'getDataSendForPing' ){
+	require_once __DIR__ . '/../class/webobserver.class.php';
+
+	$errors = 0;
+
+	$webObserver = new WebObserver();
+	$textSrvResponse = $langs->trans('DataSendByPing').' : <br/>';
+	$instanceData = $webObserver->getInstanceData();
+	$srvPingMsg = '';
+	if($instanceData){
+		$webHostResponse = json_encode($instanceData, JSON_PRETTY_PRINT);
 	}
 }
 
@@ -197,11 +214,16 @@ if ($action == 'edit') {
 	}
 
 
-	print '<div ><a class="butAction" href="'.dol_buildpath("webobserver/admin/setup.php",1).'?action=sendWebHostPing&token='.newToken().'" >'.$langs->trans('SendWebHostPing').'</a></div>';
+	print '<div >';
+	print '<a class="butAction" href="'.dol_buildpath("webobserver/admin/setup.php",1).'?action=sendWebHostPing&token='.newToken().'" >'.$langs->trans('SendWebHostPing').'</a>';
+	print '<a class="butAction" href="'.dol_buildpath("webobserver/admin/setup.php",1).'?action=getDataSendForPing&token='.newToken().'" >'.$langs->trans('GetDataSendForPing').'</a>';
+	print '</div>';
 
 	if(!empty($webHostResponse)){
 		print '<h4>'.$langs->trans('serverResponse').' :</h4>';
-		print '<textarea style="width: 100%; min-height: 400px;">'.dol_htmlentities($webHostResponse).'</textarea>';
+		preg_match_all("/(\n)/", dol_htmlentities($webHostResponse), $matches);
+		$total_lines = count($matches[0]) + 1;
+		print '<textarea disabled style="width: 100%; min-height: 400px;" rows="'.$total_lines.'" >'.dol_htmlentities($webHostResponse).'</textarea>';
 	}
 
 }

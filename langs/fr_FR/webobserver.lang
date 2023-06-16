@@ -52,3 +52,4 @@ InvalidWebHostUrl = Url WebHost invalide "%s"
 SendWebHostPing = Envoyer un ping au serveur webHost
 WEBOBSERVER_USE_GIT_AND_SHELL_CMD = Le serveur peut utiliser les commandes shell pour obtenir les infos git sur les modules installés
 WEBOBSERVER_USE_GIT_AND_SHELL_CMDTooltip = Git doit être installé et php doit pouvoir executer des commandes shell_exec
+GetDataSendForPing = Consulter les données avant envoi

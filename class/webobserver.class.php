@@ -39,15 +39,15 @@ class WebObserver {
 
 		$instance->dolibarr->data = new stdClass;
 		$instance->dolibarr->data->path = DOL_DATA_ROOT;
-		$instance->dolibarr->data->size = self::getDirSize($instance->dolibarr->data->path, DOL_DATA_ROOT);
+		$instance->dolibarr->data->size = self::getDirSize($instance->dolibarr->data->path);
 
 		$instance->dolibarr->htdocs=new stdClass;
 		$instance->dolibarr->htdocs->path = DOL_DOCUMENT_ROOT;
-		$instance->dolibarr->htdocs->size = self::getDirSize($instance->dolibarr->htdocs->path, DOL_DATA_ROOT);
+		$instance->dolibarr->htdocs->size = self::getDirSize($instance->dolibarr->htdocs->path);
 
 		$instance->dolibarr->repertoire_client=new stdClass;
-		$instance->dolibarr->repertoire_client->path = dirname(dirname(DOL_DOCUMENT_ROOT));
-		$instance->dolibarr->repertoire_client->size = self::getDirSize($instance->dolibarr->repertoire_client->path, DOL_DATA_ROOT);
+		$instance->dolibarr->repertoire_client->path = dirname(DOL_DOCUMENT_ROOT, 1);
+		$instance->dolibarr->repertoire_client->size = self::getDirSize($instance->dolibarr->repertoire_client->path);
 
 		// Informations about Dolibarr database
 		$instance->db=new stdClass;
@@ -115,22 +115,65 @@ class WebObserver {
 	}
 
 
-
 	/**
 	 * Get size of a directory on the server, in bytes
-	 * @param $dir	Absolute path of the directory to scan
-	 * @return int	Size of the diectory or -1 if $dir is not a directory
+	 * @param $dir    Absolute path of the directory to scan
+	 * @param bool $useShellExec
+	 * @param int $useCache default  43200 (12H) max 86400 (1day)
+	 * @param bool $createCacheFile use true to generate cache file
+	 * @return int    Size of the diectory in bytes or -1 if $dir is not a directory
 	 */
-	public static function getDirSize($dir) {
+	public static function getDirSize($dir, $useShellExec = false, int $useCache = 43200, $createCacheFile = false) {
 		if(is_dir($dir)) {
-			$cmd = 'du -sb ' . $dir;
-			$res = shell_exec($cmd);
 
-			return (int)$res;
+			$getCacheFilePath = function($targetDir){
+				$cacheFileName = 'getDirSize_'.md5($targetDir).'.cache';
+				return self::getTmpFoldeerPath().'/'.$cacheFileName;
+			};
+
+			$cacheFilePath = $getCacheFilePath($dir);
+
+			$useCache = min($useCache, 86400);
+
+			if($useCache && file_exists($cacheFilePath) && is_file($cacheFilePath) && filemtime($cacheFilePath) > (time()-$useCache) ){
+				$cacheSize = file_get_contents($cacheFilePath);
+				if($cacheSize !== false){
+					return intval($cacheSize);
+				}
+			}
+
+			if($useShellExec){
+				$cmd = 'du -sb ' . $dir;
+				$res = shell_exec($cmd); // in bytes
+				return (int)$res;
+			}
+			else{
+				$size = 0;
+
+				$iterator = new RecursiveDirectoryIterator($dir);
+				$all_files  = new RecursiveIteratorIterator($iterator);
+
+				foreach($all_files as $file){
+					$size+=$file->getSize(); // in bytes
+				}
+
+				if ($createCacheFile && is_dir(self::getTmpFoldeerPath())) {
+					file_put_contents($cacheFilePath, $size);
+				}
+
+				return $size;
+			}
 		}
 
 		return -1;
 	}
+
+
+
+	public static function getTmpFoldeerPath(){
+		return DOL_DATA_ROOT . '/webobserver/temp';
+	}
+
 
 	/**
 	 * Get informations about disk space
@@ -228,19 +271,25 @@ class WebObserver {
 	 * @return stdClass
 	 */
 	public static function getModuleGitInfos($dir) {
-		global $doneDir;
+		global $doneDir, $conf;
 		if(isset($doneDir[$dir])) return $doneDir[$dir];
 
-		// TODO import realese packager git detection class
+		require_once __DIR__ . '/phpGit.class.php';
 
-		$cmd = 'cd ' . $dir . ' && git status';
-		$status = shell_exec($cmd);
-		$cmd = 'cd ' . $dir . ' && git rev-parse --abbrev-ref HEAD';
-		$branch = shell_exec($cmd);
+		// Use PhpGit to speed
+		$phpGit = new \webObserver\PhpGit($dir);
+		if(!$phpGit->isGitNanaged){
+			return false;
+		}
+
 
 		$doneDir[$dir] = new stdClass();
-		$doneDir[$dir]->status = $status;
-		$doneDir[$dir]->branch = $branch;
+		$doneDir[$dir]->status = '';
+		$doneDir[$dir]->branch = $phpGit->branchName;
+
+		if(!empty($conf->global->WEBOBSERVER_USE_GIT_AND_SHELL_CMD)){
+			$doneDir[$dir]->status = $phpGit->status();
+		}
 
 		return $doneDir[$dir];
 	}

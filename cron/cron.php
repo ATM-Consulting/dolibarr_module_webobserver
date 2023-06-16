@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../class/webobserver.class.php';
-require_once __DIR__ . '/../class/jsonResponse.class.php';
 
 class WebObserverCron {
 
