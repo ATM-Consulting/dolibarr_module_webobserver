@@ -93,13 +93,18 @@ print load_fiche_titre($langs->trans($page_name), $linkback, 'title_setup');
 
 // Configuration header
 $head = webobserverAdminPrepareHead();
-print dol_get_fiche_head($head, 'about', $langs->trans($page_name), 0, 'webobserver@webobserver');
+print dol_get_fiche_head($head, 'about', $langs->trans($page_name), -1, 'webobserver@webobserver');
+
+
+require_once __DIR__ . '/../class/techatm.class.php';
+$techATM = new \webObserver\TechATM($db);
 
 dol_include_once('/webobserver/core/modules/modWebObserver.class.php');
-$tmpmodule = new modWebObserver($db);
-print $tmpmodule->getDescLong();
+$moduleDescriptor = new modWebObserver($db);
+
+print $techATM->getAboutPage($moduleDescriptor);
 
 // Page end
-print dol_get_fiche_end();
+print dol_get_fiche_end(-1);
 llxFooter();
 $db->close();
