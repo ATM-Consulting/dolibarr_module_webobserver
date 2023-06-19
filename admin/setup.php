@@ -55,7 +55,7 @@ global $langs, $user;
 // Libraries
 require_once DOL_DOCUMENT_ROOT."/core/lib/admin.lib.php";
 require_once '../lib/webobserver.lib.php';
-//require_once "../class/myclass.class.php";
+require_once "../class/jsonWebApiResponse.class.php";
 
 // Translations
 $langs->loadLangs(array("admin", "webobserver@webobserver"));
@@ -92,48 +92,34 @@ $setupnotempty = 0;
 $useFormSetup = 0;
 // Convert arrayofparameter into a formSetup object
 
-	$formSetup = new FormSetup($db);
-
-	// or use the new system see exemple as follow (or use both because you can ;-) )
-
-	// Setup conf webhost token
-	$formSetup->newItem('WEBOBSERVER_TOKEN')->setAsSecureKey();
-
-	$formSetup->newItem('WEBOBSERVER_WEBHOST_URL');
+$formSetup = new FormSetup($db);
 
 
-	$item = $formSetup->newItem('WEBOBSERVER_HOOK_URL');
-	$item->fieldOutputOverride = dol_buildpath('/webobserver/public/get-data.php', 2);
-	$item->fieldInputOverride = $item->fieldOutputOverride;
+$item = $formSetup->newItem('WEBOBSERVER_HOOK_URL');
+$item->fieldOutputOverride = dol_buildpath('/webobserver/public/get-data.php', 2);
+$item->fieldInputOverride = $item->fieldOutputOverride;
 
 
-//	// Hôte
-//	$item = $formSetup->newItem('NO_PARAM_JUST_TEXT');
-//	$item->fieldOverride = (empty($_SERVER['HTTPS']) ? 'http://' : 'https://') . $_SERVER['HTTP_HOST'];
-//	$item->cssClass = 'minwidth500';
-//
-//	// Setup conf WEBOBSERVER_MYPARAM1 as a simple string input
-//	$item = $formSetup->newItem('WEBOBSERVER_MYPARAM1');
-//
-//	// Setup conf WEBOBSERVER_MYPARAM1 as a simple textarea input but we replace the text of field title
-//	$item = $formSetup->newItem('WEBOBSERVER_MYPARAM2');
-//	$item->nameText = $item->getNameText().' more html text ';
-//
-//	// Setup conf WEBOBSERVER_MYPARAM3
-//	$item = $formSetup->newItem('WEBOBSERVER_MYPARAM3');
-//	$item->setAsThirdpartyType();
-//
-//	// Setup conf WEBOBSERVER_MYPARAM4 : exemple of quick define write style
-//	$formSetup->newItem('WEBOBSERVER_MYPARAM4')->setAsYesNo();
-//
-//	// Setup conf WEBOBSERVER_MYPARAM5
-//	$formSetup->newItem('WEBOBSERVER_MYPARAM5')->setAsEmailTemplate('thirdparty');
-//
-//	// Setup conf WEBOBSERVER_MYPARAM6
-//	$formSetup->newItem('WEBOBSERVER_MYPARAM6')->setAsSecureKey()->enabled = 0; // disabled
-//
-//	// Setup conf WEBOBSERVER_MYPARAM7
-//	$formSetup->newItem('WEBOBSERVER_MYPARAM7')->setAsProduct();
+// Setup conf webhost token
+$formSetup->newItem('WEBOBSERVER_TOKEN')->setAsSecureKey();
+
+
+
+$formSetup->newItem('WEBOBSERVER_CRON_CONF_TITLE')->setAsTitle();
+
+$formSetup->newItem('WEBOBSERVER_INSTANCE_REF');
+
+$formSetup->newItem('WEBOBSERVER_WEBHOST_URL');
+
+$item = $formSetup->newItem('WEBOBSERVER_INSTANCE_ID');
+$item->fieldAttr['type'] = 'number';
+$item->fieldAttr['min'] = 1;
+$item->fieldAttr['step'] = 1;
+
+$item = $formSetup->newItem('WEBOBSERVER_INSTANCE_REF');
+
+
+$formSetup->newItem('WEBOBSERVER_USE_GIT_AND_SHELL_CMD')->setAsYesNo();
 
 
 $setupnotempty = count($formSetup->items);
@@ -149,6 +135,45 @@ include DOL_DOCUMENT_ROOT.'/core/actions_setmoduleoptions.inc.php';
 if (intval(DOL_VERSION) < 15 && $action == 'update' && !empty($formSetup) && is_object($formSetup) && !empty($user->admin)) {
 	$formSetup->saveConfFromPost();
 	return;
+}
+elseif($action == 'sendWebHostPing' ){
+	require_once __DIR__ . '/../class/webobserver.class.php';
+
+	$errors = 0;
+
+	$webObserver = new WebObserver();
+	$webHostResponse = $webObserver->callWebHost();
+	$textSrvResponse = $langs->trans('ServerResponse').' : <br/>';
+	$srvPingMsg = '';
+
+	if($webHostResponse){
+		$jsonResponse = new WebObserver\JsonWebApiResponse();
+		if($jsonResponse->parseJsonResponse($webHostResponse)){
+			if($jsonResponse->result > 0){
+				setEventMessage($textSrvResponse.$jsonResponse->msg);
+			}else{
+				setEventMessage($textSrvResponse.$jsonResponse->msg, 'errors');
+			}
+		}
+		else{
+			setEventMessage($textSrvResponse.$webObserver->error, 'errors');
+		}
+	}else{
+		setEventMessage($textSrvResponse.$webObserver->error, 'errors');
+	}
+}
+elseif($action == 'getDataSendForPing' ){
+	require_once __DIR__ . '/../class/webobserver.class.php';
+
+	$errors = 0;
+
+	$webObserver = new WebObserver();
+	$textSrvResponse = $langs->trans('DataSendByPing').' : <br/>';
+	$instanceData = $webObserver->getInstanceData();
+	$srvPingMsg = '';
+	if($instanceData){
+		$webHostResponse = json_encode($instanceData, JSON_PRETTY_PRINT);
+	}
 }
 
 /*
@@ -187,6 +212,20 @@ if ($action == 'edit') {
 	} else {
 		print '<br>'.$langs->trans("NothingToSetup");
 	}
+
+
+	print '<div >';
+	print '<a class="butAction" href="'.dol_buildpath("webobserver/admin/setup.php",1).'?action=sendWebHostPing&token='.newToken().'" >'.$langs->trans('SendWebHostPing').'</a>';
+	print '<a class="butAction" href="'.dol_buildpath("webobserver/admin/setup.php",1).'?action=getDataSendForPing&token='.newToken().'" >'.$langs->trans('GetDataSendForPing').'</a>';
+	print '</div>';
+
+	if(!empty($webHostResponse)){
+		print '<h4>'.$langs->trans('serverResponse').' :</h4>';
+		preg_match_all("/(\n)/", dol_htmlentities($webHostResponse), $matches);
+		$total_lines = count($matches[0]) + 1;
+		print '<textarea disabled style="width: 100%; min-height: 400px;" rows="'.$total_lines.'" >'.dol_htmlentities($webHostResponse).'</textarea>';
+	}
+
 }
 
 

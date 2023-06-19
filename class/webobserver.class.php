@@ -1,6 +1,23 @@
 <?php
 
+require_once __DIR__ . '/httpHeaders.trait.php';
+
 class WebObserver {
+
+	use webObserver\HttpHeaders;
+
+	/**
+	 * @var string 		Error string
+	 * @see             $errors
+	 */
+	public $error;
+
+	/**
+	 * @var string[]	Array of error strings
+	 */
+	public $errors = array();
+
+
 
 	public static function getInstanceData(){
 
@@ -22,15 +39,15 @@ class WebObserver {
 
 		$instance->dolibarr->data = new stdClass;
 		$instance->dolibarr->data->path = DOL_DATA_ROOT;
-		$instance->dolibarr->data->size = self::getDirSize($instance->dolibarr->data->path, DOL_DATA_ROOT);
+		$instance->dolibarr->data->size = self::getDirSize($instance->dolibarr->data->path);
 
 		$instance->dolibarr->htdocs=new stdClass;
 		$instance->dolibarr->htdocs->path = DOL_DOCUMENT_ROOT;
-		$instance->dolibarr->htdocs->size = self::getDirSize($instance->dolibarr->htdocs->path, DOL_DATA_ROOT);
+		$instance->dolibarr->htdocs->size = self::getDirSize($instance->dolibarr->htdocs->path);
 
 		$instance->dolibarr->repertoire_client=new stdClass;
-		$instance->dolibarr->repertoire_client->path = dirname(dirname(DOL_DOCUMENT_ROOT));
-		$instance->dolibarr->repertoire_client->size = self::getDirSize($instance->dolibarr->repertoire_client->path, DOL_DATA_ROOT);
+		$instance->dolibarr->repertoire_client->path = dirname(DOL_DOCUMENT_ROOT, 1);
+		$instance->dolibarr->repertoire_client->size = self::getDirSize($instance->dolibarr->repertoire_client->path);
 
 		// Informations about Dolibarr database
 		$instance->db=new stdClass;
@@ -98,22 +115,65 @@ class WebObserver {
 	}
 
 
-
 	/**
 	 * Get size of a directory on the server, in bytes
-	 * @param $dir	Absolute path of the directory to scan
-	 * @return int	Size of the diectory or -1 if $dir is not a directory
+	 * @param $dir    Absolute path of the directory to scan
+	 * @param bool $useShellExec
+	 * @param int $useCache default  43200 (12H) max 86400 (1day)
+	 * @param bool $createCacheFile use true to generate cache file
+	 * @return int    Size of the diectory in bytes or -1 if $dir is not a directory
 	 */
-	public static function getDirSize($dir) {
+	public static function getDirSize($dir, $useShellExec = false, int $useCache = 43200, $createCacheFile = false) {
 		if(is_dir($dir)) {
-			$cmd = 'du -sb ' . $dir;
-			$res = shell_exec($cmd);
 
-			return (int)$res;
+			$getCacheFilePath = function($targetDir){
+				$cacheFileName = 'getDirSize_'.md5($targetDir).'.cache';
+				return self::getTmpFoldeerPath().'/'.$cacheFileName;
+			};
+
+			$cacheFilePath = $getCacheFilePath($dir);
+
+			$useCache = min($useCache, 86400);
+
+			if($useCache && file_exists($cacheFilePath) && is_file($cacheFilePath) && filemtime($cacheFilePath) > (time()-$useCache) ){
+				$cacheSize = file_get_contents($cacheFilePath);
+				if($cacheSize !== false){
+					return intval($cacheSize);
+				}
+			}
+
+			if($useShellExec){
+				$cmd = 'du -sb ' . $dir;
+				$res = shell_exec($cmd); // in bytes
+				return (int)$res;
+			}
+			else{
+				$size = 0;
+
+				$iterator = new RecursiveDirectoryIterator($dir);
+				$all_files  = new RecursiveIteratorIterator($iterator);
+
+				foreach($all_files as $file){
+					$size+=$file->getSize(); // in bytes
+				}
+
+				if ($createCacheFile && is_dir(self::getTmpFoldeerPath())) {
+					file_put_contents($cacheFilePath, $size);
+				}
+
+				return $size;
+			}
 		}
 
 		return -1;
 	}
+
+
+
+	public static function getTmpFoldeerPath(){
+		return DOL_DATA_ROOT . '/webobserver/temp';
+	}
+
 
 	/**
 	 * Get informations about disk space
@@ -132,10 +192,9 @@ class WebObserver {
 	}
 
 
-	/********************************
+	/**
 	 * Specific functions to get informations about Dolibarr (Modules, Users, ...)
-	 ********************************/
-
+	*/
 	public static function module_active() {
 		include_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
 
@@ -207,22 +266,37 @@ class WebObserver {
 		return $modNameLoaded;
 	}
 
+	/**
+	 * @param $dir
+	 * @return stdClass
+	 */
 	public static function getModuleGitInfos($dir) {
-		global $donedir;
-		if(isset($donedir[$dir])) return $donedir[$dir];
+		global $doneDir, $conf;
+		if(isset($doneDir[$dir])) return $doneDir[$dir];
 
-		$cmd = 'cd ' . $dir . ' && git status';
-		$status = shell_exec($cmd);
-		$cmd = 'cd ' . $dir . ' && git rev-parse --abbrev-ref HEAD';
-		$branch = shell_exec($cmd);
+		require_once __DIR__ . '/phpGit.class.php';
 
-		$donedir[$dir] = new stdClass();
-		$donedir[$dir]->status = $status;
-		$donedir[$dir]->branch = $branch;
+		// Use PhpGit to speed
+		$phpGit = new \webObserver\PhpGit($dir);
+		if(!$phpGit->isGitNanaged){
+			return false;
+		}
 
-		return $donedir[$dir];
+
+		$doneDir[$dir] = new stdClass();
+		$doneDir[$dir]->status = '';
+		$doneDir[$dir]->branch = $phpGit->branchName;
+
+		if(!empty($conf->global->WEBOBSERVER_USE_GIT_AND_SHELL_CMD)){
+			$doneDir[$dir]->status = $phpGit->status();
+		}
+
+		return $doneDir[$dir];
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public static function last_login() {
 		global $db;
 
@@ -251,4 +325,126 @@ class WebObserver {
 
 		return (int)$obj->nb;
 	}
+
+
+	/**
+	 * @param int $value Durée d'expiration (en secondes) pour les flots basés sur les sockets.
+	 */
+	public function setSocketTimeOut($value = 0){
+		if($value>0){
+			$this->default_socket_timeout = intval($value);
+		}
+
+		ini_set('default_socket_timeout', $this->default_socket_timeout);
+	}
+
+
+	public function callWebHost($useCache = true){
+		global $conf, $langs;
+
+		// Use cache
+		if($useCache && !empty($this->data)){
+			return $this->data;
+		}
+
+
+		$instanceId = false;
+		$instanceRef = false;
+
+		$url = $this->getWebHostTargetUrl();
+
+		if(!$url){
+			$this->setError('Configuration WebHost target URL not set');
+			return false;
+		}
+
+		if(!empty($conf->global->WEBOBSERVER_INSTANCE_ID)){
+			$instanceId = $conf->global->WEBOBSERVER_INSTANCE_ID;
+		}
+
+		if(!empty($conf->global->WEBOBSERVER_INSTANCE_REF)){
+			$instanceRef = $conf->global->WEBOBSERVER_INSTANCE_REF;
+		}
+
+		if(empty($instanceId) && empty($instanceRef)){
+			$this->setError('Configuration ID OR REF not set');
+			return false;
+		}
+
+
+		if(empty($conf->global->WEBOBSERVER_TOKEN)){
+			$this->setError('MissingTokenAPI');
+			return false;
+		}
+
+
+		$instanceData = $this->getInstanceData();
+		if (!is_object($instanceData) || empty($instanceData)) {
+			$this->setError($langs->transnoentities('EmptyInstanceData'));
+			return false;
+		}
+
+
+		$time = time();
+		$hash = md5($conf->global->WEBOBSERVER_TOKEN . $time);
+
+		$url.= '?action=set-info-instance-dolibarr';
+		$url.= '&hash='.$hash.'&time='.$time;
+		$url.= '&api_observer_type=webobserver_v1';
+
+
+		if(!empty($instanceId)){
+			$url.= '&id='.intval($instanceId);
+		}
+
+		if(!empty($instanceRef)){
+			$url.= '&ref='.urlencode($instanceRef);
+		}
+
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($instanceData, JSON_FORCE_OBJECT));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		if(!$webHostResponse = curl_exec($ch)){
+			$this->setError(curl_error($ch));
+			return false;
+		}
+		curl_close($ch);
+
+		return $webHostResponse;
+	}
+
+
+
+	/**
+	 * Permet gérer les retours d'erreur avec message
+	 *
+	 * @param string $err
+	 */
+	public function setError($err){
+		if(!empty($err)){
+			$this->error = $err;
+			$this->errors[] = $this->error;
+		}
+	}
+
+	/**
+	 * @return bool|string $url
+	 */
+	public function getWebHostTargetUrl(){
+		global $conf;
+
+		if(empty($conf->global->WEBOBSERVER_WEBHOST_URL)) return false;
+
+		$url = $conf->global->WEBOBSERVER_WEBHOST_URL;
+
+		if(filter_var($url, FILTER_VALIDATE_URL)){
+			return $url;
+		}
+		else{
+			return false;
+		}
+	}
+
 }
