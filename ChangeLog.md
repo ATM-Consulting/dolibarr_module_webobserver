@@ -2,4 +2,5 @@
 
 ## 1.0
 
+- FIX : Dolistore Zip error  *13/11/2023* - 1.0.1
 Initial version
