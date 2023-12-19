@@ -147,7 +147,7 @@ class modWebObserver extends DolibarrModules
 
 		// Prerequisites
 		$this->phpmin = array(7, 0); // Minimum version of PHP required by module
-		$this->need_dolibarr_version = array(12, 19); // Minimum version of Dolibarr required by module
+		$this->need_dolibarr_version = array(12, 0); // Minimum version of Dolibarr required by module
 
 		// Messages at activation
 		$this->warnings_activation = array(); // Warning to show when we activate module. array('always'='text') or array('FR'='textfr','MX'='textmx'...)
