@@ -14,7 +14,7 @@ class WebObserverCron {
 			$langs = new Translate('', $conf);
 		}
 
-		$langs->setDefaultLang(!empty($conf->global->MAIN_LANG_DEFAULT)?$conf->global->MAIN_LANG_DEFAULT:'en_US');
+		$langs->setDefaultLang(getDolGlobalString('MAIN_LANG_DEFAULT', 'en_US'));
 		$langs->loadLangs(array('main', 'admin', 'cron', 'dict'));
 		if(is_callable(array($langs, 'reload'))){
 			$langs->reload('webobserver@webobserver');

@@ -72,7 +72,7 @@ class modWebObserver extends DolibarrModules
 		$this->editor_url = 'https://www.atm-consulting.fr';
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr', 'dolibarr_deprecated' or a version string like 'x.y.z'
-		$this->version = '1.0.1';
+		$this->version = '1.1.0';
 		// Url to the file with your last numberversion of this module
 		require_once __DIR__ . '/../../class/techatm.class.php';
 		$this->url_last_version = \webObserver\TechATM::getLastModuleVersionUrl($this);
@@ -146,8 +146,8 @@ class modWebObserver extends DolibarrModules
 		$this->langfiles = array("webobserver@webobserver");
 
 		// Prerequisites
-		$this->phpmin = array(5, 6); // Minimum version of PHP required by module
-		$this->need_dolibarr_version = array(11, -3); // Minimum version of Dolibarr required by module
+		$this->phpmin = array(7, 0); // Minimum version of PHP required by module
+		$this->need_dolibarr_version = array(12, 0); // Minimum version of Dolibarr required by module
 
 		// Messages at activation
 		$this->warnings_activation = array(); // Warning to show when we activate module. array('always'='text') or array('FR'='textfr','MX'='textmx'...)

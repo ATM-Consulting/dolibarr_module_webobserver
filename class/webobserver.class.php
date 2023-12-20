@@ -31,7 +31,7 @@ class WebObserver {
 		// Dolibarr main informations
 		$instance->dolibarr = new stdClass;
 		$instance->dolibarr->version = DOL_VERSION;
-		$instance->dolibarr->version1 = $conf->global->MAIN_VERSION_LAST_INSTALL;
+		$instance->dolibarr->version1 = getDolGlobalString('MAIN_VERSION_LAST_INSTALL');
 		$instance->dolibarr->theme = $conf->theme;
 
 		$instance->dolibarr->path=new stdClass;
@@ -64,8 +64,8 @@ class WebObserver {
 
 		// Security informations
 		$instance->security=new stdClass;
-		$instance->security->database_pwd_encrypted = $conf->global->DATABASE_PWD_ENCRYPTED;
-		$instance->security->main_features_level = $conf->global->MAIN_FEATURES_LEVEL;
+		$instance->security->database_pwd_encrypted = getDolGlobalString('DATABASE_PWD_ENCRYPTED');
+		$instance->security->main_features_level = getDolGlobalString('MAIN_FEATURES_LEVEL');
 		$instance->security->install_lock = file_exists(DOL_DATA_ROOT . '/install.lock');
 
 		// Informations about module activated on the instance
@@ -94,11 +94,11 @@ class WebObserver {
 	public static function securityCheck() {
 		global $conf;
 
-		if(empty($conf->global->WEBOBSERVER_TOKEN)){
+		if(!getDolGlobalString('WEBOBSERVER_TOKEN')){
 			return exit('Invalid token configuration');
 		}
 
-		$token = $conf->global->WEBOBSERVER_TOKEN;
+		$token =getDolGlobalString('WEBOBSERVER_TOKEN');
 
 		// Vérification paramètres
 		if(!isset($_GET['hash'])) exit('Missing parameter');
@@ -236,7 +236,7 @@ class WebObserver {
 										$modNameLoaded[$modName]->gitinfos = self::getModuleGitInfos($dir);
 										$modNameLoaded[$modName]->editor_name = dol_escape_htmltag($pubname);
 										$modNameLoaded[$modName]->editor_url = dol_escape_htmltag($puburl);
-										$modNameLoaded[$modName]->active = !empty($conf->global->{$objMod->const_name});
+										$modNameLoaded[$modName]->active = getDolGlobalString($objMod->const_name);
 									}
 									catch (Exception $e)
 									{
@@ -287,7 +287,7 @@ class WebObserver {
 		$doneDir[$dir]->status = '';
 		$doneDir[$dir]->branch = $phpGit->branchName;
 
-		if(!empty($conf->global->WEBOBSERVER_USE_GIT_AND_SHELL_CMD)){
+		if(getDolGlobalString('WEBOBSERVER_USE_GIT_AND_SHELL_CMD')){
 			$doneDir[$dir]->status = $phpGit->status();
 		}
 
@@ -358,12 +358,12 @@ class WebObserver {
 			return false;
 		}
 
-		if(!empty($conf->global->WEBOBSERVER_INSTANCE_ID)){
-			$instanceId = $conf->global->WEBOBSERVER_INSTANCE_ID;
+		if(getDolGlobalString('WEBOBSERVER_INSTANCE_ID')){
+			$instanceId = getDolGlobalString('WEBOBSERVER_INSTANCE_ID');
 		}
 
-		if(!empty($conf->global->WEBOBSERVER_INSTANCE_REF)){
-			$instanceRef = $conf->global->WEBOBSERVER_INSTANCE_REF;
+		if(getDolGlobalString('WEBOBSERVER_INSTANCE_REF')){
+			$instanceRef = getDolGlobalString('WEBOBSERVER_INSTANCE_REF');
 		}
 
 		if(empty($instanceId) && empty($instanceRef)){
@@ -372,7 +372,7 @@ class WebObserver {
 		}
 
 
-		if(empty($conf->global->WEBOBSERVER_TOKEN)){
+		if(!getDolGlobalString('WEBOBSERVER_TOKEN')){
 			$this->setError('MissingTokenAPI');
 			return false;
 		}
@@ -386,7 +386,7 @@ class WebObserver {
 
 
 		$time = time();
-		$hash = md5($conf->global->WEBOBSERVER_TOKEN . $time);
+		$hash = md5(getDolGlobalString('WEBOBSERVER_TOKEN') . $time);
 
 		$url.= '?action=set-info-instance-dolibarr';
 		$url.= '&hash='.$hash.'&time='.$time;
@@ -435,9 +435,9 @@ class WebObserver {
 	public function getWebHostTargetUrl(){
 		global $conf;
 
-		if(empty($conf->global->WEBOBSERVER_WEBHOST_URL)) return false;
+		if(!getDolGlobalString('WEBOBSERVER_WEBHOST_URL')) return false;
 
-		$url = $conf->global->WEBOBSERVER_WEBHOST_URL;
+		$url = getDolGlobalString('WEBOBSERVER_WEBHOST_URL') ;
 
 		if(filter_var($url, FILTER_VALIDATE_URL)){
 			return $url;
