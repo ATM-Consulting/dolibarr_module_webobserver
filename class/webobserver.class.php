@@ -154,7 +154,11 @@ class WebObserver {
 				$all_files  = new RecursiveIteratorIterator($iterator);
 
 				foreach($all_files as $file){
-					$size+=$file->getSize(); // in bytes
+					try {
+						$size += $file->getSize(); // in bytes
+					} catch (Exception $e) {
+
+					}
 				}
 
 				if ($createCacheFile && is_dir(self::getTmpFoldeerPath())) {
