@@ -3,6 +3,7 @@
 
 ## Release 1.1
 
+- NEW : Changed Dolibarr compatibility range to 16 min - 20max *9/08/2024* - 1.1.2
 - FIX : fatal on file get size *10/04/2024* - 1.1.1
 - NEW : Compat V19 et php 8.2 *15/12/2023* - 1.1.0  
   Changed Dolibarr compatibility range to 15 min - 19 max  
