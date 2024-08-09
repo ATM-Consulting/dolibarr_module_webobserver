@@ -168,7 +168,7 @@ class modWebObserver extends DolibarrModules
 			'fr_FR:ParentCompany'=>'Maison mère ou revendeur'
 		)*/
 
-		if (!isset($conf->webobserver) || !isset($conf->webobserver->enabled)) {
+		if (!isset($conf->webobserver) || isModEnabled('webobserver')) {
 			$conf->webobserver = new stdClass();
 			$conf->webobserver->enabled = 0;
 		}
