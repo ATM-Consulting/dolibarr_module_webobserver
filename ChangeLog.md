@@ -1,5 +1,9 @@
 # CHANGELOG WEBOBSERVER FOR [DOLIBARR ERP CRM](https://www.dolibarr.org)
 
+## Unreleased
+
+
+
 ## Release 1.2
 
 - NEW : Changed Dolibarr compatibility range to 16 min - 20max *9/08/2024* - 1.2
